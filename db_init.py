@@ -3,7 +3,8 @@ from sqlalchemy import create_engine, Column, Integer, String, Float
 from sqlalchemy.orm import declarative_base, Session
 import os
 
-DB_FILE = "products.db"
+# Usar PostgreSQL (Render proporcionará la variable DATABASE_URL)
+DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///products.db")
 Base = declarative_base()
 
 
@@ -11,12 +12,12 @@ class Product(Base):
     __tablename__ = "products"
 
     id = Column(Integer, primary_key=True)
-    codigo = Column(String, unique=True, nullable=False)  # código de barras
+    codigo = Column(String, unique=True, nullable=False)
     nombre = Column(String, nullable=False)
     precio_walmart = Column(Float, nullable=False)
     precio_chedraui = Column(Float, nullable=False)
     precio_soriana = Column(Float, nullable=False)
-    predicted_price_next_year = Column(Float, nullable=True)  # precio previsto general (opcional)
+    predicted_price_next_year = Column(Float, nullable=True)
 
 
 def populate_sample(session):
@@ -43,31 +44,17 @@ def populate_sample(session):
         {"codigo": "7500810022061", "nombre": "Pan Bimbo integral 620g", "precio_walmart": 51.00, "precio_chedraui": 59.00, "precio_soriana": 57.90, "predicted_price_next_year": 58.00},
         {"codigo": "7501000111800", "nombre": "Pan tostado Bimbo clásico 210g", "precio_walmart": 39.00, "precio_chedraui": 39.00, "precio_soriana": 39.80, "predicted_price_next_year": 41.00},
     ]
-
     for p in samples:
-        prod = Product(
-            codigo=p["codigo"],
-            nombre=p["nombre"],
-            precio_walmart=p["precio_walmart"],
-            precio_chedraui=p["precio_chedraui"],
-            precio_soriana=p["precio_soriana"],
-            predicted_price_next_year=p.get("predicted_price_next_year")
-        )
-        session.add(prod)
+        session.add(Product(**p))
     session.commit()
 
 
 def main():
-    if os.path.exists(DB_FILE):
-        print(f"{DB_FILE} ya existe. Si quieres recrearlo, borra el archivo y vuelve a ejecutar.")
-        return
-
-    engine = create_engine(f"sqlite:///{DB_FILE}", echo=False, future=True)
+    engine = create_engine(DATABASE_URL, echo=False, future=True)
     Base.metadata.create_all(engine)
     with Session(engine) as session:
         populate_sample(session)
-
-    print("✅ Base de datos creada y poblada con ejemplos en products.db")
+    print("✅ Base de datos creada y poblada correctamente.")
 
 
 if __name__ == "__main__":
