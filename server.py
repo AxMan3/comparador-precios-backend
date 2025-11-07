@@ -8,8 +8,8 @@ import os
 
 # Configuración de Flask
 app = Flask(__name__)
-# Configuración de CORS para permitir peticiones desde cualquier origen
-CORS(app)
+# Configuración de CORS para permitir peticiones desde cualquier origen (CORRECCIÓN CRUCIAL)
+CORS(app, resources={r"/*": {"origins": "*"}})
 
 # --- Configuración de Conexión a DB ---
 # Usar la variable de entorno DATABASE_URL proporcionada por Render (por defecto a SQLite local)
