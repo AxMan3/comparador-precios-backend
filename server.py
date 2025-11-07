@@ -25,12 +25,53 @@ else:
 engine = create_engine(adapted_url, echo=False, future=True)
 
 # ⭐️ CORRECCIÓN DE LA DB: Asegurar que las tablas de la DB existan al iniciar el servidor.
-# Esto es vital porque Render no ejecuta scripts de inicialización de DB automáticamente.
 try:
     Base.metadata.create_all(engine)
     print("✅ Tablas de base de datos verificadas y creadas si no existían.")
 except Exception as db_init_e:
     print(f"⚠️ Advertencia: Error al intentar crear tablas en la DB: {db_init_e}")
+
+def load_test_data():
+    """Carga datos de prueba si la base de datos está vacía."""
+    with Session(engine) as session:
+        # Verificar si ya existen productos
+        if session.execute(select(Product)).first() is not None:
+            print("💾 Datos de prueba ya existen. No se carga nada.")
+            return
+
+        print("🛠️ Cargando datos de prueba iniciales...")
+        test_products = [
+            Product(
+                codigo="7501000100010", 
+                nombre="Leche Entera Lala 1L", 
+                precio_walmart=25.50, 
+                precio_chedraui=24.90, 
+                precio_soriana=26.00, 
+                predicted_price_next_year=27.00
+            ),
+            Product(
+                codigo="555123456789", 
+                nombre="Pan Bimbo Blanco", 
+                precio_walmart=40.00, 
+                precio_chedraui=38.50, 
+                precio_soriana=39.50, 
+                predicted_price_next_year=41.50
+            ),
+            Product(
+                codigo="111222333444", 
+                nombre="Aguacate Hass", 
+                precio_walmart=50.00, 
+                precio_chedraui=55.00, 
+                precio_soriana=48.00, 
+                predicted_price_next_year=45.00 # Predicción de bajada de precio
+            ),
+        ]
+        session.add_all(test_products)
+        session.commit()
+        print("✅ Datos de prueba cargados exitosamente.")
+
+# Llama a la función de carga de datos justo después de crear las tablas
+load_test_data()
 
 @app.route("/")
 def index():
