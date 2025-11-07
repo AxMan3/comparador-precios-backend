@@ -6,22 +6,6 @@ from sqlalchemy.orm import Session
 from db_init import Base, Product
 import os
 
-# 1. Configuración de Flask
-app = Flask(__name__)
-# Permitimos CORS para que Hostinger pueda comunicarse con Render
-CORS(app) 
-
-# 2. Configuración de la base de datos
-# Render proporcionará DATABASE_URL para PostgreSQL. Usamos SQLite como fallback local.
-DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///products.db")
-# server.py
-from flask import Flask, request, jsonify
-from flask_cors import CORS
-from sqlalchemy import create_engine, select
-from sqlalchemy.orm import Session
-from db_init import Base, Product
-import os
-
 # Configuración de Flask
 app = Flask(__name__)
 # Configuración de CORS para permitir peticiones desde cualquier origen
@@ -32,7 +16,7 @@ CORS(app)
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///products.db")
 
 # Adaptar la URL de la base de datos si es PostgreSQL para usar el driver psycopg
-# CRUCIAL: Usamos 'postgresql+psycopg://' para el driver moderno.
+# CRUCIAL: Reemplazamos 'postgres://' por 'postgresql+psycopg://' para el driver moderno 'psycopg'
 if DATABASE_URL.startswith("postgres://"):
     adapted_url = DATABASE_URL.replace("postgres://", "postgresql+psycopg://", 1)
 else:
@@ -44,7 +28,7 @@ engine = create_engine(adapted_url, echo=False, future=True)
 @app.route("/")
 def index():
     """Ruta de salud simple para verificar que la API está funcionando."""
-    return jsonify({"message": "🚀 API del Comparador de Precios (Python 3.13 ready)"})
+    return jsonify({"message": "🚀 API del Comparador de Precios (Python ready)"})
 
 def product_to_dict(p):
     """Convierte un objeto Producto de SQLAlchemy a un diccionario amigable para JSON,
