@@ -1,4 +1,3 @@
-# server.py
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from sqlalchemy import create_engine, select
@@ -25,6 +24,14 @@ else:
 # Configurar motor de SQLAlchemy
 engine = create_engine(adapted_url, echo=False, future=True)
 
+# ⭐️ CORRECCIÓN DE LA DB: Asegurar que las tablas de la DB existan al iniciar el servidor.
+# Esto es vital porque Render no ejecuta scripts de inicialización de DB automáticamente.
+try:
+    Base.metadata.create_all(engine)
+    print("✅ Tablas de base de datos verificadas y creadas si no existían.")
+except Exception as db_init_e:
+    print(f"⚠️ Advertencia: Error al intentar crear tablas en la DB: {db_init_e}")
+
 @app.route("/")
 def index():
     """Ruta de salud simple para verificar que la API está funcionando."""
@@ -32,7 +39,7 @@ def index():
 
 def product_to_dict(p):
     """Convierte un objeto Producto de SQLAlchemy a un diccionario amigable para JSON,
-       incluyendo el cálculo de pronóstico con manejo de división por cero."""
+        incluyendo el cálculo de pronóstico con manejo de división por cero."""
     precios = [
         {"tienda": "Walmart", "precio": p.precio_walmart},
         {"tienda": "Chedraui", "precio": p.precio_chedraui},
